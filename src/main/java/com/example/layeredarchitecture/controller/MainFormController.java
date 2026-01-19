@@ -5,6 +5,7 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -18,6 +19,7 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 
@@ -37,10 +39,6 @@ public class MainFormController {
     @FXML
     private Label lblDescription;
 
-
-    /**
-     * Initializes the controller class.
-     */
     public void initialize(URL url, ResourceBundle rb) {
         FadeTransition fadeIn = new FadeTransition(Duration.millis(2000), root);
         fadeIn.setFromValue(0.0);
@@ -111,13 +109,13 @@ public class MainFormController {
 
             switch (icon.getId()) {
                 case "imgCustomer":
-                    root = FXMLLoader.load(this.getClass().getResource("/com/example/layeredarchitecture/manage-customers-form.fxml"));
+                    root = FXMLLoader.load(Objects.requireNonNull(this.getClass().getResource("/com/example/layeredarchitecture/manage-customers-form.fxml")));
                     break;
                 case "imgItem":
-                    root = FXMLLoader.load(this.getClass().getResource("/com/example/layeredarchitecture/manage-items-form.fxml"));
+                    root = FXMLLoader.load(Objects.requireNonNull(this.getClass().getResource("/com/example/layeredarchitecture/manage-items-form.fxml")));
                     break;
                 case "imgOrder":
-                    root = FXMLLoader.load(this.getClass().getResource("/com/example/layeredarchitecture/place-order-form.fxml"));
+                    root = FXMLLoader.load(Objects.requireNonNull(this.getClass().getResource("/com/example/layeredarchitecture/place-order-form.fxml")));
                     break;
                 case "imgViewOrders":
                     root = null;

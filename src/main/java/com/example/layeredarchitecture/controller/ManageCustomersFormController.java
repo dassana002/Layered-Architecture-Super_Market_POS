@@ -1,6 +1,8 @@
 package com.example.layeredarchitecture.controller;
 
+import com.example.layeredarchitecture.dao.CustomerDAOImpl;
 import com.example.layeredarchitecture.db.DBConnection;
+import com.example.layeredarchitecture.model.CustomerDTO;
 import com.example.layeredarchitecture.view.tdm.CustomerTM;
 import com.jfoenix.controls.JFXButton;
 import javafx.application.Platform;
@@ -23,8 +25,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-
 
 public class ManageCustomersFormController {
     public AnchorPane root;
@@ -64,35 +64,27 @@ public class ManageCustomersFormController {
     }
 
     private void loadAllCustomers() {
-        tblCustomers.getItems().clear();
-        /*Get all customers*/
-        try {
-            Connection connection = DBConnection.getDbConnection().getConnection();
-            Statement stm = connection.createStatement();
-            ResultSet rst = stm.executeQuery("SELECT * FROM Customer");
 
-            while (rst.next()) {
-                tblCustomers.getItems().add(new CustomerTM(rst.getString("id"), rst.getString("name"), rst.getString("address")));
+        // Clean Table
+        tblCustomers.getItems().clear();
+
+        try {
+            CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
+
+            // Get all customers
+            ArrayList<CustomerDTO> customers = customerDAOImpl.getAllCustomers();
+
+            for (CustomerDTO customer : customers) {
+                tblCustomers.getItems().add(new CustomerTM(
+                        customer.getId(),
+                        customer.getName(),
+                        customer.getAddress()
+                ));
             }
-        } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
-        } catch (ClassNotFoundException e) {
+
+        } catch (SQLException | ClassNotFoundException e) {
             new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         }
-
-
-    }
-
-    private void initUI() {
-        txtCustomerId.clear();
-        txtCustomerName.clear();
-        txtCustomerAddress.clear();
-        txtCustomerId.setDisable(true);
-        txtCustomerName.setDisable(true);
-        txtCustomerAddress.setDisable(true);
-        txtCustomerId.setEditable(false);
-        btnSave.setDisable(true);
-        btnDelete.setDisable(true);
     }
 
     @FXML
@@ -103,23 +95,8 @@ public class ManageCustomersFormController {
         Stage primaryStage = (Stage) (this.root.getScene().getWindow());
         primaryStage.setScene(scene);
         primaryStage.centerOnScreen();
-        Platform.runLater(() -> primaryStage.sizeToScene());
+        Platform.runLater(primaryStage::sizeToScene);
     }
-
-    public void btnAddNew_OnAction(ActionEvent actionEvent) {
-        txtCustomerId.setDisable(false);
-        txtCustomerName.setDisable(false);
-        txtCustomerAddress.setDisable(false);
-        txtCustomerId.clear();
-        txtCustomerId.setText(generateNewId());
-        txtCustomerName.clear();
-        txtCustomerAddress.clear();
-        txtCustomerName.requestFocus();
-        btnSave.setDisable(false);
-        btnSave.setText("Save");
-        tblCustomers.getSelectionModel().clearSelection();
-    }
-
 
     public void btnSave_OnAction(ActionEvent actionEvent) {
         String id = txtCustomerId.getText();
@@ -184,14 +161,12 @@ public class ManageCustomersFormController {
         btnAddNewCustomer.fire();
     }
 
-
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
         Connection connection = DBConnection.getDbConnection().getConnection();
         PreparedStatement pstm = connection.prepareStatement("SELECT id FROM Customer WHERE id=?");
         pstm.setString(1, id);
         return pstm.executeQuery().next();
     }
-
 
     public void btnDelete_OnAction(ActionEvent actionEvent) {
         /*Delete Customer*/
@@ -250,4 +225,29 @@ public class ManageCustomersFormController {
         return tempCustomersList.get(tempCustomersList.size() - 1).getId();
     }
 
+    private void initUI() {
+        txtCustomerId.clear();
+        txtCustomerName.clear();
+        txtCustomerAddress.clear();
+        txtCustomerId.setDisable(true);
+        txtCustomerName.setDisable(true);
+        txtCustomerAddress.setDisable(true);
+        txtCustomerId.setEditable(false);
+        btnSave.setDisable(true);
+        btnDelete.setDisable(true);
+    }
+
+    public void btnAddNew_OnAction(ActionEvent actionEvent) {
+        txtCustomerId.setDisable(false);
+        txtCustomerName.setDisable(false);
+        txtCustomerAddress.setDisable(false);
+        txtCustomerId.clear();
+        txtCustomerId.setText(generateNewId());
+        txtCustomerName.clear();
+        txtCustomerAddress.clear();
+        txtCustomerName.requestFocus();
+        btnSave.setDisable(false);
+        btnSave.setText("Save");
+        tblCustomers.getSelectionModel().clearSelection();
+    }
 }
