@@ -161,7 +161,7 @@ public class ManageCustomersFormController {
                 boolean isUpdate = customerDAOImpl.updateCustomer(customerDTO);
 
                 if (isUpdate) {
-                    tblCustomers.getItems().add(new CustomerTM(id, name, address));
+                    new Alert(Alert.AlertType.INFORMATION, "Save to update the customer ").show();
                 }else {
                     new Alert(Alert.AlertType.ERROR, "Failed to update the customer ").show();
                 }
