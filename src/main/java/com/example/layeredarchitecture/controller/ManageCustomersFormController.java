@@ -161,7 +161,12 @@ public class ManageCustomersFormController {
                 boolean isUpdate = customerDAOImpl.updateCustomer(customerDTO);
 
                 if (isUpdate) {
-                    new Alert(Alert.AlertType.INFORMATION, "Save to update the customer ").show();
+                    // update UI
+                    CustomerTM selectedCustomer = tblCustomers.getSelectionModel().getSelectedItem();
+                    selectedCustomer.setName(name);
+                    selectedCustomer.setAddress(address);
+                    tblCustomers.refresh();
+
                 }else {
                     new Alert(Alert.AlertType.ERROR, "Failed to update the customer ").show();
                 }
@@ -171,11 +176,6 @@ public class ManageCustomersFormController {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-
-            CustomerTM selectedCustomer = tblCustomers.getSelectionModel().getSelectedItem();
-            selectedCustomer.setName(name);
-            selectedCustomer.setAddress(address);
-            tblCustomers.refresh();
         }
 
         btnAddNewCustomer.fire();
@@ -189,20 +189,25 @@ public class ManageCustomersFormController {
     }
 
     public void btnDelete_OnAction(ActionEvent actionEvent) {
+
         /*Delete Customer*/
         String id = tblCustomers.getSelectionModel().getSelectedItem().getId();
+
         try {
             if (!existCustomer(id)) {
                 new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + id).show();
             }
-            Connection connection = DBConnection.getDbConnection().getConnection();
-            PreparedStatement pstm = connection.prepareStatement("DELETE FROM Customer WHERE id=?");
-            pstm.setString(1, id);
-            pstm.executeUpdate();
 
-            tblCustomers.getItems().remove(tblCustomers.getSelectionModel().getSelectedItem());
-            tblCustomers.getSelectionModel().clearSelection();
-            initUI();
+            CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
+            boolean isDelete = customerDAOImpl.deleteCustomer(id);
+
+            if (isDelete) {
+                tblCustomers.getItems().remove(tblCustomers.getSelectionModel().getSelectedItem());
+                tblCustomers.getSelectionModel().clearSelection();
+                initUI();
+            } else {
+                new Alert(Alert.AlertType.ERROR, "Failed to delete the customer ").show();
+            }
 
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Failed to delete the customer " + id).show();
