@@ -52,9 +52,29 @@ public class CustomerDAOImpl {
 
     public boolean deleteCustomer(String customerId) throws SQLException, ClassNotFoundException {
         Connection connection = DBConnection.getDbConnection().getConnection();
+
         PreparedStatement pstm = connection.prepareStatement("DELETE FROM Customer WHERE id=?");
         pstm.setString(1, customerId);
         int rs = pstm.executeUpdate();
         return rs > 0;
+    }
+
+    public boolean existsCustomer(String customerId) throws SQLException, ClassNotFoundException {
+        Connection connection = DBConnection.getDbConnection().getConnection();
+
+        PreparedStatement pstm = connection.prepareStatement("SELECT id FROM Customer WHERE id=?");
+        pstm.setString(1, customerId);
+
+        ResultSet rs = pstm.executeQuery();
+        return rs.next();
+    }
+
+    public String getLatestId() throws SQLException, ClassNotFoundException {
+        Connection connection = DBConnection.getDbConnection().getConnection();
+        ResultSet rst = connection.createStatement().executeQuery("SELECT id FROM Customer ORDER BY id DESC LIMIT 1;");
+        if (rst.next()) {
+            return rst.getString("id");
+        }
+        return null;
     }
 }
