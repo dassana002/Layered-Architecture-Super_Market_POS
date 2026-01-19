@@ -1,6 +1,8 @@
 package com.example.layeredarchitecture.controller;
 
+import com.example.layeredarchitecture.dao.ItemDAOImpl;
 import com.example.layeredarchitecture.db.DBConnection;
+import com.example.layeredarchitecture.model.ItemDTO;
 import com.example.layeredarchitecture.view.tdm.ItemTM;
 import com.jfoenix.controls.JFXButton;
 import javafx.application.Platform;
@@ -21,7 +23,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-
+import java.util.ArrayList;
 
 
 public class ManageItemsFormController {
@@ -69,31 +71,21 @@ public class ManageItemsFormController {
         tblItems.getItems().clear();
         try {
             /*Get all items*/
-            Connection connection = DBConnection.getDbConnection().getConnection();
-            Statement stm = connection.createStatement();
-            ResultSet rst = stm.executeQuery("SELECT * FROM Item");
-            while (rst.next()) {
-                tblItems.getItems().add(new ItemTM(rst.getString("code"), rst.getString("description"), rst.getBigDecimal("unitPrice"), rst.getInt("qtyOnHand")));
+            ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
+            ArrayList<ItemDTO> items = itemDAOImpl.getAllItems();
+            for (ItemDTO item : items) {
+                tblItems.getItems().add(new ItemTM(
+                        item.getCode(),
+                        item.getDescription(),
+                        item.getUnitPrice(),
+                        item.getQtyOnHand()
+                ));
             }
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-    }
-
-    private void initUI() {
-        txtCode.clear();
-        txtDescription.clear();
-        txtUnitPrice.clear();
-        txtQtyOnHand.clear();
-        txtCode.setDisable(true);
-        txtDescription.setDisable(true);
-        txtUnitPrice.setDisable(true);
-        txtQtyOnHand.setDisable(true);
-        txtCode.setEditable(false);
-        btnSave.setDisable(true);
-        btnDelete.setDisable(true);
     }
 
     @FXML
@@ -107,37 +99,26 @@ public class ManageItemsFormController {
         Platform.runLater(() -> primaryStage.sizeToScene());
     }
 
-    public void btnAddNew_OnAction(ActionEvent actionEvent) {
-        txtCode.setDisable(false);
-        txtDescription.setDisable(false);
-        txtUnitPrice.setDisable(false);
-        txtQtyOnHand.setDisable(false);
-        txtCode.clear();
-        txtCode.setText(generateNewId());
-        txtDescription.clear();
-        txtUnitPrice.clear();
-        txtQtyOnHand.clear();
-        txtDescription.requestFocus();
-        btnSave.setDisable(false);
-        btnSave.setText("Save");
-        tblItems.getSelectionModel().clearSelection();
-    }
-
     public void btnDelete_OnAction(ActionEvent actionEvent) {
         /*Delete Item*/
         String code = tblItems.getSelectionModel().getSelectedItem().getCode();
+
         try {
             if (!existItem(code)) {
                 new Alert(Alert.AlertType.ERROR, "There is no such item associated with the id " + code).show();
             }
-            Connection connection = DBConnection.getDbConnection().getConnection();
-            PreparedStatement pstm = connection.prepareStatement("DELETE FROM Item WHERE code=?");
-            pstm.setString(1, code);
-            pstm.executeUpdate();
 
-            tblItems.getItems().remove(tblItems.getSelectionModel().getSelectedItem());
-            tblItems.getSelectionModel().clearSelection();
-            initUI();
+            ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
+
+            boolean result = itemDAOImpl.deleteItem(code);
+            if (result) {
+                tblItems.getItems().remove(tblItems.getSelectionModel().getSelectedItem());
+                tblItems.getSelectionModel().clearSelection();
+                initUI();
+            }else {
+                new Alert(Alert.AlertType.ERROR, "Failed to delete the item " + code).show();
+            }
+
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Failed to delete the item " + code).show();
         } catch (ClassNotFoundException e) {
@@ -166,73 +147,80 @@ public class ManageItemsFormController {
         int qtyOnHand = Integer.parseInt(txtQtyOnHand.getText());
         BigDecimal unitPrice = new BigDecimal(txtUnitPrice.getText()).setScale(2);
 
-
         if (btnSave.getText().equalsIgnoreCase("save")) {
             try {
                 if (existItem(code)) {
                     new Alert(Alert.AlertType.ERROR, code + " already exists").show();
                 }
+
                 //Save Item
-                Connection connection = DBConnection.getDbConnection().getConnection();
-                PreparedStatement pstm = connection.prepareStatement("INSERT INTO Item (code, description, unitPrice, qtyOnHand) VALUES (?,?,?,?)");
-                pstm.setString(1, code);
-                pstm.setString(2, description);
-                pstm.setBigDecimal(3, unitPrice);
-                pstm.setInt(4, qtyOnHand);
-                pstm.executeUpdate();
-                tblItems.getItems().add(new ItemTM(code, description, unitPrice, qtyOnHand));
+                ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
+                ItemDTO itemDTO = new ItemDTO(
+                    code,
+                    description,
+                    unitPrice,
+                    qtyOnHand
+                );
+
+                boolean result = itemDAOImpl.saveItem(itemDTO);
+                if (result) {
+                    tblItems.getItems().add(new ItemTM(code, description, unitPrice, qtyOnHand));
+                }else {
+                    new Alert(Alert.AlertType.ERROR, "Item is not saved").show();
+                }
 
             } catch (SQLException e) {
                 new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
+
         } else {
             try {
-
                 if (!existItem(code)) {
                     new Alert(Alert.AlertType.ERROR, "There is no such item associated with the id " + code).show();
                 }
                 /*Update Item*/
-                Connection connection = DBConnection.getDbConnection().getConnection();
-                PreparedStatement pstm = connection.prepareStatement("UPDATE Item SET description=?, unitPrice=?, qtyOnHand=? WHERE code=?");
-                pstm.setString(1, description);
-                pstm.setBigDecimal(2, unitPrice);
-                pstm.setInt(3, qtyOnHand);
-                pstm.setString(4, code);
-                pstm.executeUpdate();
 
-                ItemTM selectedItem = tblItems.getSelectionModel().getSelectedItem();
-                selectedItem.setDescription(description);
-                selectedItem.setQtyOnHand(qtyOnHand);
-                selectedItem.setUnitPrice(unitPrice);
-                tblItems.refresh();
+                ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
+                ItemDTO itemDTO = new ItemDTO(
+                        code,
+                        description,
+                        unitPrice,
+                        qtyOnHand
+                );
+
+                boolean result = itemDAOImpl.updateItem(itemDTO);
+                if (result) {
+                    ItemTM selectedItem = tblItems.getSelectionModel().getSelectedItem();
+                    selectedItem.setDescription(description);
+                    selectedItem.setQtyOnHand(qtyOnHand);
+                    selectedItem.setUnitPrice(unitPrice);
+                    tblItems.refresh();
+                }else {
+                    new Alert(Alert.AlertType.ERROR, "Item Is not update").show();
+                }
+
             } catch (SQLException e) {
                 new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
-
         btnAddNewItem.fire();
     }
 
-
     private boolean existItem(String code) throws SQLException, ClassNotFoundException {
-        Connection connection = DBConnection.getDbConnection().getConnection();
-        PreparedStatement pstm = connection.prepareStatement("SELECT code FROM Item WHERE code=?");
-        pstm.setString(1, code);
-        return pstm.executeQuery().next();
+        ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
+        return itemDAOImpl.existsItem(code);
     }
-
 
     private String generateNewId() {
         try {
-            Connection connection = DBConnection.getDbConnection().getConnection();
-            ResultSet rst = connection.createStatement().executeQuery("SELECT code FROM Item ORDER BY code DESC LIMIT 1;");
-            if (rst.next()) {
-                String id = rst.getString("code");
-                int newItemId = Integer.parseInt(id.replace("I00-", "")) + 1;
+            ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
+            String item = itemDAOImpl.latestItemCode();
+            if (item != null) {
+                int newItemId = Integer.parseInt(item.replace("I00-", "")) + 1;
                 return String.format("I00-%03d", newItemId);
             } else {
                 return "I00-001";
@@ -243,5 +231,35 @@ public class ManageItemsFormController {
             e.printStackTrace();
         }
         return "I00-001";
+    }
+
+    private void initUI() {
+        txtCode.clear();
+        txtDescription.clear();
+        txtUnitPrice.clear();
+        txtQtyOnHand.clear();
+        txtCode.setDisable(true);
+        txtDescription.setDisable(true);
+        txtUnitPrice.setDisable(true);
+        txtQtyOnHand.setDisable(true);
+        txtCode.setEditable(false);
+        btnSave.setDisable(true);
+        btnDelete.setDisable(true);
+    }
+
+    public void btnAddNew_OnAction(ActionEvent actionEvent) {
+        txtCode.setDisable(false);
+        txtDescription.setDisable(false);
+        txtUnitPrice.setDisable(false);
+        txtQtyOnHand.setDisable(false);
+        txtCode.clear();
+        txtCode.setText(generateNewId());
+        txtDescription.clear();
+        txtUnitPrice.clear();
+        txtQtyOnHand.clear();
+        txtDescription.requestFocus();
+        btnSave.setDisable(false);
+        btnSave.setText("Save");
+        tblItems.getSelectionModel().clearSelection();
     }
 }

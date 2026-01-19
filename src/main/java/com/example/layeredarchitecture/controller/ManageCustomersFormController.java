@@ -114,10 +114,7 @@ public class ManageCustomersFormController {
         }
 
         if (btnSave.getText().equalsIgnoreCase("save")) {
-
-            /*Save Customer*/
             try {
-
                 if (existCustomer(id)) {
                     new Alert(Alert.AlertType.ERROR, id + " already exists").show();
                 }
@@ -152,7 +149,6 @@ public class ManageCustomersFormController {
                 }
 
                 CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
-
                 CustomerDTO customerDTO = new CustomerDTO(
                         id,
                         name,
@@ -224,6 +220,7 @@ public class ManageCustomersFormController {
             } else {
                 return "C00-001";
             }
+            
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Failed to generate a new id " + e.getMessage()).show();
         } catch (ClassNotFoundException e) {
