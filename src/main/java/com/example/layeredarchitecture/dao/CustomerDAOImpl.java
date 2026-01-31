@@ -77,4 +77,27 @@ public class CustomerDAOImpl {
         }
         return null;
     }
+
+    public CustomerDTO getCustomer(String newValue) throws SQLException, ClassNotFoundException {
+        Connection connection = DBConnection.getDbConnection().getConnection();
+        PreparedStatement pstm = connection.prepareStatement("SELECT * FROM Customer WHERE id=?");
+        pstm.setString(1, newValue + "");
+        ResultSet rst = pstm.executeQuery();
+        CustomerDTO customerDTO = new CustomerDTO();
+        if (rst.next()) {
+            customerDTO = new CustomerDTO(newValue + "", rst.getString("name"), rst.getString("address"));
+        }
+        return customerDTO;
+    }
+
+    public ArrayList<String> getAllCustomerIds() throws SQLException, ClassNotFoundException {
+        Connection connection = DBConnection.getDbConnection().getConnection();
+        Statement stm = connection.createStatement();
+        ResultSet rst = stm.executeQuery("SELECT * FROM Customer");
+        ArrayList<String> customerIds = new ArrayList<>();
+        while (rst.next()) {
+            customerIds.add(rst.getString("id"));
+        }
+        return customerIds;
+    }
 }

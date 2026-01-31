@@ -70,4 +70,36 @@ public class ItemDAOImpl {
         }
         return null;
     }
+
+    public ItemDTO getItem(String newItemCode) throws SQLException, ClassNotFoundException {
+        Connection connection = DBConnection.getDbConnection().getConnection();
+        PreparedStatement pstm = connection.prepareStatement("SELECT * FROM Item WHERE code=?");
+        pstm.setString(1, newItemCode + "");
+        ResultSet rst = pstm.executeQuery();
+        ItemDTO item = new ItemDTO();
+        if (rst.next()) {
+            item = new ItemDTO(newItemCode + "", rst.getString("description"), rst.getBigDecimal("unitPrice"), rst.getInt("qtyOnHand"));
+        }
+        return item;
+    }
+
+    public ItemDTO findItem(String code) throws SQLException, ClassNotFoundException {
+        Connection connection = DBConnection.getDbConnection().getConnection();
+        String query = "SELECT * FROM Item WHERE code=?";
+
+        PreparedStatement pstm = connection.prepareStatement(query);
+        pstm.setString(1, code);
+
+        ResultSet rst = pstm.executeQuery();
+
+        if (rst.next()) {
+           return new ItemDTO(
+                   code,
+                   rst.getString("description"),
+                   rst.getBigDecimal("unitPrice"),
+                   rst.getInt("qtyOnHand")
+           );
+        }
+        return null;
+    }
 }
