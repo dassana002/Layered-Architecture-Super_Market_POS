@@ -119,13 +119,15 @@ public class ManageCustomersFormController {
                     new Alert(Alert.AlertType.ERROR, id + " already exists").show();
                 }
 
+                // Tight Coupling
                 CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
+
                 CustomerDTO customerDTO = new CustomerDTO(
                         id,
                         name,
                         address);
 
-                // customer save
+                // Customer Save
                 boolean isSave = customerDAOImpl.saveCustomer(customerDTO);
 
                 if (isSave) {
@@ -142,18 +144,20 @@ public class ManageCustomersFormController {
 
         } else {
 
-            /*Update customer*/
             try {
                 if (!existCustomer(id)) {
                     new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + id).show();
                 }
 
+                // Tight Coupling
                 CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
+
                 CustomerDTO customerDTO = new CustomerDTO(
                         id,
                         name,
                         address);
 
+                // Update Customer
                 boolean isUpdate = customerDAOImpl.updateCustomer(customerDTO);
 
                 if (isUpdate) {
@@ -177,13 +181,13 @@ public class ManageCustomersFormController {
     }
 
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
+        // Tight Coupling
         CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
         return customerDAOImpl.existsCustomer(id);
     }
 
     public void btnDelete_OnAction(ActionEvent actionEvent) {
 
-        /*Delete Customer*/
         String id = tblCustomers.getSelectionModel().getSelectedItem().getId();
 
         try {
@@ -191,7 +195,10 @@ public class ManageCustomersFormController {
                 new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + id).show();
             }
 
+            // Tight Coupling
             CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
+
+            // Customer Delete
             boolean isDelete = customerDAOImpl.deleteCustomer(id);
 
             if (isDelete) {
@@ -211,6 +218,7 @@ public class ManageCustomersFormController {
 
     private String generateNewId() {
         try {
+            // Tight Coupling
             CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
             String id = customerDAOImpl.getLatestId();
 

@@ -71,6 +71,7 @@ public class ManageItemsFormController {
         tblItems.getItems().clear();
         try {
             /*Get all items*/
+            // Tight Coupling
             ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
             ArrayList<ItemDTO> items = itemDAOImpl.getAllItems();
             for (ItemDTO item : items) {
@@ -100,7 +101,6 @@ public class ManageItemsFormController {
     }
 
     public void btnDelete_OnAction(ActionEvent actionEvent) {
-        /*Delete Item*/
         String code = tblItems.getSelectionModel().getSelectedItem().getCode();
 
         try {
@@ -108,9 +108,12 @@ public class ManageItemsFormController {
                 new Alert(Alert.AlertType.ERROR, "There is no such item associated with the id " + code).show();
             }
 
+            // Tight Coupling
             ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
 
+            // Delete Item
             boolean result = itemDAOImpl.deleteItem(code);
+
             if (result) {
                 tblItems.getItems().remove(tblItems.getSelectionModel().getSelectedItem());
                 tblItems.getSelectionModel().clearSelection();
@@ -153,7 +156,7 @@ public class ManageItemsFormController {
                     new Alert(Alert.AlertType.ERROR, code + " already exists").show();
                 }
 
-                //Save Item
+                // Tight Coupling
                 ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
                 ItemDTO itemDTO = new ItemDTO(
                     code,
@@ -162,7 +165,9 @@ public class ManageItemsFormController {
                     qtyOnHand
                 );
 
+                //Save Item
                 boolean result = itemDAOImpl.saveItem(itemDTO);
+
                 if (result) {
                     tblItems.getItems().add(new ItemTM(code, description, unitPrice, qtyOnHand));
                 }else {
@@ -180,8 +185,8 @@ public class ManageItemsFormController {
                 if (!existItem(code)) {
                     new Alert(Alert.AlertType.ERROR, "There is no such item associated with the id " + code).show();
                 }
-                /*Update Item*/
 
+                // Tight Coupling
                 ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
                 ItemDTO itemDTO = new ItemDTO(
                         code,
@@ -190,7 +195,9 @@ public class ManageItemsFormController {
                         qtyOnHand
                 );
 
+                // Update Customer
                 boolean result = itemDAOImpl.updateItem(itemDTO);
+
                 if (result) {
                     ItemTM selectedItem = tblItems.getSelectionModel().getSelectedItem();
                     selectedItem.setDescription(description);
@@ -211,13 +218,16 @@ public class ManageItemsFormController {
     }
 
     private boolean existItem(String code) throws SQLException, ClassNotFoundException {
+        // Tight Coupling
         ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
         return itemDAOImpl.existsItem(code);
     }
 
     private String generateNewId() {
         try {
+            // Tight Coupling
             ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
+
             String item = itemDAOImpl.latestItemCode();
             if (item != null) {
                 int newItemId = Integer.parseInt(item.replace("I00-", "")) + 1;

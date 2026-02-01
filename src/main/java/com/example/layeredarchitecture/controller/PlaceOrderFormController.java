@@ -106,7 +106,9 @@ public class PlaceOrderFormController {
                             new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + newValue + "").show();
                         }
 
+                        // Tight Coupling
                         CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
+
                         CustomerDTO customerDTO = customerDAOImpl.getCustomer(newValue);
                         if (customerDTO != null) {
                             txtCustomerName.setText(customerDTO.getName());
@@ -138,7 +140,9 @@ public class PlaceOrderFormController {
 //                        throw new NotFoundException("There is no such item associated with the id " + code);
                     }
 
+                    // Tight Coupling
                     ItemDAOImpl  itemDAOImpl = new ItemDAOImpl();
+
                     ItemDTO item = itemDAOImpl.getItem(newItemCode);
                     if (item != null ) {
                         txtDescription.setText(item.getDescription());
@@ -187,17 +191,20 @@ public class PlaceOrderFormController {
     }
 
     private boolean existItem(String code) throws SQLException, ClassNotFoundException {
+        // Tight Coupling
         ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
         return itemDAOImpl.existsItem(code);
     }
 
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
+        // Tight Coupling
         CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
         return customerDAOImpl.existsCustomer(id);
     }
 
     public String generateNewOrderId() {
         try {
+            // Tight Coupling
             OrderDAOImpl orderDAOImpl = new OrderDAOImpl();
             return orderDAOImpl.generateNewOrderId();
 
@@ -212,6 +219,7 @@ public class PlaceOrderFormController {
 
     private void loadAllCustomerIds() {
         try {
+            // Tight Coupling
             CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
             ArrayList<String> customerIds = customerDAOImpl.getAllCustomerIds();
             for (String customerId : customerIds) {
@@ -228,8 +236,9 @@ public class PlaceOrderFormController {
 
     private void loadAllItemCodes() {
         try {
-            /*Get all items*/
+            // Tight Coupling
             ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
+            // Get All Item Codes
             ArrayList<ItemDTO> itemDTOS= itemDAOImpl.getAllItems();
             for (ItemDTO itemDTO : itemDTOS) {
                 cmbItemCode.getItems().add(itemDTO.getCode());
@@ -333,7 +342,7 @@ public class PlaceOrderFormController {
         try {
             connection.setAutoCommit(false);
 
-            // Property Injection
+            // Tight Coupling
             OrderDAOImpl orderDAOImpl = new OrderDAOImpl();
             OrderDetailDAOImpl orderDetailDAOImpl = new OrderDetailDAOImpl();
 
