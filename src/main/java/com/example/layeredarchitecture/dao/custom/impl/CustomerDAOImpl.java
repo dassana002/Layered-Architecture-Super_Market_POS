@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class CustomerDAOImpl implements CustomerDAO {
 
-    public ArrayList<CustomerDTO> getAllCustomers() throws SQLException, ClassNotFoundException {
+    public ArrayList<CustomerDTO> getAll() throws SQLException, ClassNotFoundException {
         ResultSet rs = CrudUtil.execute("SELECT * FROM Customer");
         ArrayList<CustomerDTO> customers = new ArrayList<>();
         while (rs.next()) {
@@ -23,7 +23,7 @@ public class CustomerDAOImpl implements CustomerDAO {
         return customers;
     }
 
-    public boolean saveCustomer(CustomerDTO customerDTO) throws SQLException, ClassNotFoundException {
+    public boolean save(CustomerDTO customerDTO) throws SQLException, ClassNotFoundException {
         return CrudUtil.execute("INSERT INTO Customer (id,name, address) VALUES (?,?,?)",
                 customerDTO.getId(),
                 customerDTO.getName(),
@@ -31,7 +31,7 @@ public class CustomerDAOImpl implements CustomerDAO {
                 );
     }
 
-    public boolean updateCustomer(CustomerDTO customerDTO) throws SQLException, ClassNotFoundException {
+    public boolean update(CustomerDTO customerDTO) throws SQLException, ClassNotFoundException {
         return CrudUtil.execute("UPDATE Customer SET name=?, address=? WHERE id=?",
                 customerDTO.getName(),
                 customerDTO.getAddress(),
@@ -39,11 +39,11 @@ public class CustomerDAOImpl implements CustomerDAO {
         );
     }
 
-    public boolean deleteCustomer(String customerId) throws SQLException, ClassNotFoundException {
+    public boolean delete(String customerId) throws SQLException, ClassNotFoundException {
         return CrudUtil.execute("DELETE FROM Customer WHERE id=?", customerId);
     }
 
-    public boolean existsCustomer(String customerId) throws SQLException, ClassNotFoundException {
+    public boolean isExists(String customerId) throws SQLException, ClassNotFoundException {
         ResultSet rs = CrudUtil.execute("SELECT id FROM Customer WHERE id=?", customerId);
         return rs.next();
     }
@@ -53,7 +53,7 @@ public class CustomerDAOImpl implements CustomerDAO {
         return rs.getString("id");
     }
 
-    public CustomerDTO getCustomer(String newValue) throws SQLException, ClassNotFoundException {
+    public CustomerDTO find(String newValue) throws SQLException, ClassNotFoundException {
         ResultSet rs = CrudUtil.execute("SELECT * FROM Customer WHERE id=?", newValue);
         if (rs.next()) {
             return new CustomerDTO(
@@ -65,7 +65,7 @@ public class CustomerDAOImpl implements CustomerDAO {
         return null;
     }
 
-    public ArrayList<String> getAllCustomerIds() throws SQLException, ClassNotFoundException {
+    public ArrayList<String> getAllIds() throws SQLException, ClassNotFoundException {
         ResultSet rs = CrudUtil.execute("SELECT * FROM Customer");
         ArrayList<String> customerIds = new ArrayList<>();
         while (rs.next()) {

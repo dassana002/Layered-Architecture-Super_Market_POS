@@ -116,7 +116,7 @@ public class PlaceOrderFormController {
                         }
 
                         // Get customer
-                        CustomerDTO customerDTO = customerDAO.getCustomer(newValue);
+                        CustomerDTO customerDTO = customerDAO.find(newValue);
 
                         if (customerDTO != null) {
                             txtCustomerName.setText(customerDTO.getName());
@@ -149,7 +149,7 @@ public class PlaceOrderFormController {
                     }
 
                     // Get Item
-                    ItemDTO item = itemDAO.getItem(newItemCode);
+                    ItemDTO item = itemDAO.find(newItemCode);
 
                     if (item != null ) {
                         txtDescription.setText(item.getDescription());
@@ -198,16 +198,16 @@ public class PlaceOrderFormController {
     }
 
     private boolean existItem(String code) throws SQLException, ClassNotFoundException {
-        return itemDAO.existsItem(code);
+        return itemDAO.isExists(code);
     }
 
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
-        return customerDAO.existsCustomer(id);
+        return customerDAO.isExists(id);
     }
 
     public String generateNewOrderId() {
         try {
-            return orderDAO.generateNewOrderId();
+            return orderDAO.getLatestId();
 
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Failed to generate a new order id").show();
@@ -220,7 +220,7 @@ public class PlaceOrderFormController {
 
     private void loadAllCustomerIds() {
         try {
-            ArrayList<String> customerIds = customerDAO.getAllCustomerIds();
+            ArrayList<String> customerIds = customerDAO.getAllIds();
             for (String customerId : customerIds) {
                 cmbCustomerId.getItems().add(customerId);
             }
@@ -236,7 +236,7 @@ public class PlaceOrderFormController {
     private void loadAllItemCodes() {
         try {
             // Get All Item Codes
-            ArrayList<ItemDTO> itemDTOS= itemDAO.getAllItems();
+            ArrayList<ItemDTO> itemDTOS= itemDAO.getAll();
             for (ItemDTO itemDTO : itemDTOS) {
                 cmbItemCode.getItems().add(itemDTO.getCode());
             }
@@ -340,7 +340,7 @@ public class PlaceOrderFormController {
             connection.setAutoCommit(false);
 
             // Check Exist Order
-            boolean isExists = orderDAO.existsOrderId(orderId);
+            boolean isExists = orderDAO.isExists(orderId);
 
             if (!isExists) {
                 // set orderDTO
@@ -351,7 +351,7 @@ public class PlaceOrderFormController {
                 );
 
                 // Order save in DB
-                boolean isOrderSave = orderDAO.saveOrder(orderDTO);
+                boolean isOrderSave = orderDAO.save(orderDTO);
 
                 // Check save order
                 if (!isOrderSave) {

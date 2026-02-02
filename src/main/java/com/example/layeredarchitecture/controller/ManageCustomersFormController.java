@@ -73,7 +73,7 @@ public class ManageCustomersFormController {
 
         try {
             // Get all customers
-            ArrayList<CustomerDTO> customers = customerDAO.getAllCustomers();
+            ArrayList<CustomerDTO> customers = customerDAO.getAll();
 
             for (CustomerDTO customer : customers) {
                 tblCustomers.getItems().add(new CustomerTM(
@@ -126,7 +126,7 @@ public class ManageCustomersFormController {
                         address);
 
                 // Customer Save
-                boolean isSave = customerDAO.saveCustomer(customerDTO);
+                boolean isSave = customerDAO.save(customerDTO);
 
                 if (isSave) {
                     tblCustomers.getItems().add(new CustomerTM(id, name, address));
@@ -153,7 +153,7 @@ public class ManageCustomersFormController {
                         address);
 
                 // Update Customer
-                boolean isUpdate = customerDAO.updateCustomer(customerDTO);
+                boolean isUpdate = customerDAO.update(customerDTO);
 
                 if (isUpdate) {
                     // update UI
@@ -176,7 +176,7 @@ public class ManageCustomersFormController {
     }
 
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
-        return customerDAO.existsCustomer(id);
+        return customerDAO.isExists(id);
     }
 
     public void btnDelete_OnAction(ActionEvent actionEvent) {
@@ -189,7 +189,7 @@ public class ManageCustomersFormController {
             }
 
             // Customer Delete
-            boolean isDelete = customerDAO.deleteCustomer(id);
+            boolean isDelete = customerDAO.delete(id);
 
             if (isDelete) {
                 tblCustomers.getItems().remove(tblCustomers.getSelectionModel().getSelectedItem());

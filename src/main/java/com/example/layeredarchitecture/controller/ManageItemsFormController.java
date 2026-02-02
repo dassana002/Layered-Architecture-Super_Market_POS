@@ -25,7 +25,6 @@ import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
 
-
 public class ManageItemsFormController {
     public AnchorPane root;
     public TextField txtCode;
@@ -73,7 +72,7 @@ public class ManageItemsFormController {
     private void loadAllItems() {
         tblItems.getItems().clear();
         try {
-            ArrayList<ItemDTO> items = itemDAO.getAllItems();
+            ArrayList<ItemDTO> items = itemDAO.getAll();
             for (ItemDTO item : items) {
                 tblItems.getItems().add(new ItemTM(
                         item.getCode(),
@@ -109,7 +108,7 @@ public class ManageItemsFormController {
             }
 
             // Delete Item
-            boolean result = itemDAO.deleteItem(code);
+            boolean result = itemDAO.delete(code);
 
             if (result) {
                 tblItems.getItems().remove(tblItems.getSelectionModel().getSelectedItem());
@@ -161,7 +160,7 @@ public class ManageItemsFormController {
                 );
 
                 //Save Item
-                boolean result = itemDAO.saveItem(itemDTO);
+                boolean result = itemDAO.save(itemDTO);
 
                 if (result) {
                     tblItems.getItems().add(new ItemTM(code, description, unitPrice, qtyOnHand));
@@ -189,7 +188,7 @@ public class ManageItemsFormController {
                 );
 
                 // Update Customer
-                boolean result = itemDAO.updateItem(itemDTO);
+                boolean result = itemDAO.update(itemDTO);
 
                 if (result) {
                     ItemTM selectedItem = tblItems.getSelectionModel().getSelectedItem();
@@ -213,12 +212,12 @@ public class ManageItemsFormController {
     private boolean existItem(String code) throws SQLException, ClassNotFoundException {
         // Tight Coupling
         ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
-        return itemDAOImpl.existsItem(code);
+        return itemDAOImpl.isExists(code);
     }
 
     private String generateNewId() {
         try {
-            String item = itemDAO.latestItemCode();
+            String item = itemDAO.getLatestId();
             if (item != null) {
                 int newItemId = Integer.parseInt(item.replace("I00-", "")) + 1;
                 return String.format("I00-%03d", newItemId);
