@@ -1,5 +1,6 @@
 package com.example.layeredarchitecture.controller;
 
+import com.example.layeredarchitecture.dao.ItemDAO;
 import com.example.layeredarchitecture.dao.ItemDAOImpl;
 import com.example.layeredarchitecture.db.DBConnection;
 import com.example.layeredarchitecture.model.ItemDTO;
@@ -37,6 +38,9 @@ public class ManageItemsFormController {
     public TextField txtUnitPrice;
     public JFXButton btnAddNewItem;
 
+    // Property Injection
+    ItemDAO itemDAO = new ItemDAOImpl();
+
     public void initialize() {
         tblItems.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("code"));
         tblItems.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("description"));
@@ -70,10 +74,7 @@ public class ManageItemsFormController {
     private void loadAllItems() {
         tblItems.getItems().clear();
         try {
-            /*Get all items*/
-            // Tight Coupling
-            ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
-            ArrayList<ItemDTO> items = itemDAOImpl.getAllItems();
+            ArrayList<ItemDTO> items = itemDAO.getAllItems();
             for (ItemDTO item : items) {
                 tblItems.getItems().add(new ItemTM(
                         item.getCode(),
@@ -108,11 +109,8 @@ public class ManageItemsFormController {
                 new Alert(Alert.AlertType.ERROR, "There is no such item associated with the id " + code).show();
             }
 
-            // Tight Coupling
-            ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
-
             // Delete Item
-            boolean result = itemDAOImpl.deleteItem(code);
+            boolean result = itemDAO.deleteItem(code);
 
             if (result) {
                 tblItems.getItems().remove(tblItems.getSelectionModel().getSelectedItem());
@@ -156,8 +154,6 @@ public class ManageItemsFormController {
                     new Alert(Alert.AlertType.ERROR, code + " already exists").show();
                 }
 
-                // Tight Coupling
-                ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
                 ItemDTO itemDTO = new ItemDTO(
                     code,
                     description,
@@ -166,7 +162,7 @@ public class ManageItemsFormController {
                 );
 
                 //Save Item
-                boolean result = itemDAOImpl.saveItem(itemDTO);
+                boolean result = itemDAO.saveItem(itemDTO);
 
                 if (result) {
                     tblItems.getItems().add(new ItemTM(code, description, unitPrice, qtyOnHand));
@@ -186,8 +182,6 @@ public class ManageItemsFormController {
                     new Alert(Alert.AlertType.ERROR, "There is no such item associated with the id " + code).show();
                 }
 
-                // Tight Coupling
-                ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
                 ItemDTO itemDTO = new ItemDTO(
                         code,
                         description,
@@ -196,7 +190,7 @@ public class ManageItemsFormController {
                 );
 
                 // Update Customer
-                boolean result = itemDAOImpl.updateItem(itemDTO);
+                boolean result = itemDAO.updateItem(itemDTO);
 
                 if (result) {
                     ItemTM selectedItem = tblItems.getSelectionModel().getSelectedItem();
@@ -225,10 +219,7 @@ public class ManageItemsFormController {
 
     private String generateNewId() {
         try {
-            // Tight Coupling
-            ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
-
-            String item = itemDAOImpl.latestItemCode();
+            String item = itemDAO.latestItemCode();
             if (item != null) {
                 int newItemId = Integer.parseInt(item.replace("I00-", "")) + 1;
                 return String.format("I00-%03d", newItemId);

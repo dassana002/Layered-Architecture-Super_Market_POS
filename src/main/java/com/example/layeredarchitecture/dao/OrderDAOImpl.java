@@ -5,7 +5,7 @@ import com.example.layeredarchitecture.model.OrderDTO;
 
 import java.sql.*;
 
-public class OrderDAOImpl {
+public class OrderDAOImpl implements OrderDAO {
 
     public String generateNewOrderId() throws SQLException, ClassNotFoundException {
         ResultSet rst = CrudUtil.execute("SELECT oid FROM `Orders` ORDER BY oid DESC LIMIT 1;");

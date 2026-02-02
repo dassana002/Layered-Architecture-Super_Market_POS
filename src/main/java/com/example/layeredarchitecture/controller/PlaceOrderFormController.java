@@ -1,9 +1,6 @@
 package com.example.layeredarchitecture.controller;
 
-import com.example.layeredarchitecture.dao.CustomerDAOImpl;
-import com.example.layeredarchitecture.dao.ItemDAOImpl;
-import com.example.layeredarchitecture.dao.OrderDAOImpl;
-import com.example.layeredarchitecture.dao.OrderDetailDAOImpl;
+import com.example.layeredarchitecture.dao.*;
 import com.example.layeredarchitecture.db.DBConnection;
 import com.example.layeredarchitecture.model.CustomerDTO;
 import com.example.layeredarchitecture.model.ItemDTO;
@@ -56,6 +53,12 @@ public class PlaceOrderFormController {
     public Label lblTotal;
     private String orderId;
 
+    // Property Injection
+    CustomerDAO customerDAO = new  CustomerDAOImpl();
+    ItemDAO itemDAO = new ItemDAOImpl();
+    OrderDAO orderDAO = new OrderDAOImpl();
+    OrderDetailDAO orderDetailDAO = new OrderDetailDAOImpl();
+
     public void initialize() throws SQLException, ClassNotFoundException {
 
         tblOrderDetails.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("code"));
@@ -106,10 +109,9 @@ public class PlaceOrderFormController {
                             new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + newValue + "").show();
                         }
 
-                        // Tight Coupling
-                        CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
+                        // Get customer
+                        CustomerDTO customerDTO = customerDAO.getCustomer(newValue);
 
-                        CustomerDTO customerDTO = customerDAOImpl.getCustomer(newValue);
                         if (customerDTO != null) {
                             txtCustomerName.setText(customerDTO.getName());
                         } else {
@@ -140,10 +142,9 @@ public class PlaceOrderFormController {
 //                        throw new NotFoundException("There is no such item associated with the id " + code);
                     }
 
-                    // Tight Coupling
-                    ItemDAOImpl  itemDAOImpl = new ItemDAOImpl();
+                    // Get Item
+                    ItemDTO item = itemDAO.getItem(newItemCode);
 
-                    ItemDTO item = itemDAOImpl.getItem(newItemCode);
                     if (item != null ) {
                         txtDescription.setText(item.getDescription());
                         txtUnitPrice.setText(item.getUnitPrice().setScale(2).toString());
@@ -191,22 +192,16 @@ public class PlaceOrderFormController {
     }
 
     private boolean existItem(String code) throws SQLException, ClassNotFoundException {
-        // Tight Coupling
-        ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
-        return itemDAOImpl.existsItem(code);
+        return itemDAO.existsItem(code);
     }
 
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
-        // Tight Coupling
-        CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
-        return customerDAOImpl.existsCustomer(id);
+        return customerDAO.existsCustomer(id);
     }
 
     public String generateNewOrderId() {
         try {
-            // Tight Coupling
-            OrderDAOImpl orderDAOImpl = new OrderDAOImpl();
-            return orderDAOImpl.generateNewOrderId();
+            return orderDAO.generateNewOrderId();
 
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Failed to generate a new order id").show();
@@ -219,9 +214,7 @@ public class PlaceOrderFormController {
 
     private void loadAllCustomerIds() {
         try {
-            // Tight Coupling
-            CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
-            ArrayList<String> customerIds = customerDAOImpl.getAllCustomerIds();
+            ArrayList<String> customerIds = customerDAO.getAllCustomerIds();
             for (String customerId : customerIds) {
                 cmbCustomerId.getItems().add(customerId);
             }
@@ -236,10 +229,8 @@ public class PlaceOrderFormController {
 
     private void loadAllItemCodes() {
         try {
-            // Tight Coupling
-            ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
             // Get All Item Codes
-            ArrayList<ItemDTO> itemDTOS= itemDAOImpl.getAllItems();
+            ArrayList<ItemDTO> itemDTOS= itemDAO.getAllItems();
             for (ItemDTO itemDTO : itemDTOS) {
                 cmbItemCode.getItems().add(itemDTO.getCode());
             }
@@ -342,12 +333,8 @@ public class PlaceOrderFormController {
         try {
             connection.setAutoCommit(false);
 
-            // Tight Coupling
-            OrderDAOImpl orderDAOImpl = new OrderDAOImpl();
-            OrderDetailDAOImpl orderDetailDAOImpl = new OrderDetailDAOImpl();
-
             // Check Exist Order
-            boolean isExists = orderDAOImpl.existsOrderId(orderId);
+            boolean isExists = orderDAO.existsOrderId(orderId);
 
             if (!isExists) {
                 // set orderDTO
@@ -358,7 +345,7 @@ public class PlaceOrderFormController {
                 );
 
                 // Order save in DB
-                boolean isOrderSave = orderDAOImpl.saveOrder(orderDTO);
+                boolean isOrderSave = orderDAO.saveOrder(orderDTO);
 
                 // Check save order
                 if (!isOrderSave) {
@@ -368,7 +355,7 @@ public class PlaceOrderFormController {
             }
 
             // Order Detail save
-            boolean isSaveOrderDetail = orderDetailDAOImpl.saveOrderDetailSave(orderId, orderDetails);
+            boolean isSaveOrderDetail = orderDetailDAO.saveOrderDetailSave(orderId, orderDetails);
 
             // check save order Details
             if (!isSaveOrderDetail) {
@@ -380,6 +367,7 @@ public class PlaceOrderFormController {
             return true;
 
         } catch (Exception e) {
+            connection.rollback();
             e.printStackTrace();
 
         } finally {

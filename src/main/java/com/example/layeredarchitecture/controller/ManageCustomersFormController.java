@@ -1,5 +1,6 @@
 package com.example.layeredarchitecture.controller;
 
+import com.example.layeredarchitecture.dao.CustomerDAO;
 import com.example.layeredarchitecture.dao.CustomerDAOImpl;
 import com.example.layeredarchitecture.db.DBConnection;
 import com.example.layeredarchitecture.model.CustomerDTO;
@@ -36,6 +37,9 @@ public class ManageCustomersFormController {
     public TableView<CustomerTM> tblCustomers;
     public JFXButton btnAddNewCustomer;
 
+    // Property Injection
+    CustomerDAO customerDAO = new CustomerDAOImpl();
+
     public void initialize() {
         tblCustomers.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("id"));
         tblCustomers.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -69,10 +73,8 @@ public class ManageCustomersFormController {
         tblCustomers.getItems().clear();
 
         try {
-            CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
-
             // Get all customers
-            ArrayList<CustomerDTO> customers = customerDAOImpl.getAllCustomers();
+            ArrayList<CustomerDTO> customers = customerDAO.getAllCustomers();
 
             for (CustomerDTO customer : customers) {
                 tblCustomers.getItems().add(new CustomerTM(
@@ -119,16 +121,13 @@ public class ManageCustomersFormController {
                     new Alert(Alert.AlertType.ERROR, id + " already exists").show();
                 }
 
-                // Tight Coupling
-                CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
-
                 CustomerDTO customerDTO = new CustomerDTO(
                         id,
                         name,
                         address);
 
                 // Customer Save
-                boolean isSave = customerDAOImpl.saveCustomer(customerDTO);
+                boolean isSave = customerDAO.saveCustomer(customerDTO);
 
                 if (isSave) {
                     tblCustomers.getItems().add(new CustomerTM(id, name, address));
@@ -149,16 +148,13 @@ public class ManageCustomersFormController {
                     new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + id).show();
                 }
 
-                // Tight Coupling
-                CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
-
                 CustomerDTO customerDTO = new CustomerDTO(
                         id,
                         name,
                         address);
 
                 // Update Customer
-                boolean isUpdate = customerDAOImpl.updateCustomer(customerDTO);
+                boolean isUpdate = customerDAO.updateCustomer(customerDTO);
 
                 if (isUpdate) {
                     // update UI
@@ -181,9 +177,7 @@ public class ManageCustomersFormController {
     }
 
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
-        // Tight Coupling
-        CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
-        return customerDAOImpl.existsCustomer(id);
+        return customerDAO.existsCustomer(id);
     }
 
     public void btnDelete_OnAction(ActionEvent actionEvent) {
@@ -195,11 +189,8 @@ public class ManageCustomersFormController {
                 new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + id).show();
             }
 
-            // Tight Coupling
-            CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
-
             // Customer Delete
-            boolean isDelete = customerDAOImpl.deleteCustomer(id);
+            boolean isDelete = customerDAO.deleteCustomer(id);
 
             if (isDelete) {
                 tblCustomers.getItems().remove(tblCustomers.getSelectionModel().getSelectedItem());
@@ -218,9 +209,7 @@ public class ManageCustomersFormController {
 
     private String generateNewId() {
         try {
-            // Tight Coupling
-            CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
-            String id = customerDAOImpl.getLatestId();
+            String id = customerDAO.getLatestId();
 
             if (id != null) {
                 int newCustomerId = Integer.parseInt(id.replace("C00-", "")) + 1;
