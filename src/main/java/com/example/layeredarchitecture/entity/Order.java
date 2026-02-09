@@ -17,4 +17,7 @@ public class Order {
     private String customerId;
     private String customerName;
     private BigDecimal orderTotal;
+
+    public Order(String orderId, LocalDate orderDate, String customerId) {
+    }
 }

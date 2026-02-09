@@ -15,6 +15,9 @@ import com.example.layeredarchitecture.dto.CustomerDTO;
 import com.example.layeredarchitecture.dto.ItemDTO;
 import com.example.layeredarchitecture.dto.OrderDTO;
 import com.example.layeredarchitecture.dto.OrderDetailDTO;
+import com.example.layeredarchitecture.entity.Customer;
+import com.example.layeredarchitecture.entity.Item;
+import com.example.layeredarchitecture.entity.Order;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -32,12 +35,23 @@ public class PlaceOrderBOImpl implements PlaceOrderBO {
 
     @Override
     public CustomerDTO findCustomer(String newValue) throws SQLException, ClassNotFoundException {
-        return customerDAO.find(newValue);
+        Customer customer = customerDAO.find(newValue);
+        return new CustomerDTO(
+                customer.getId(),
+                customer.getName(),
+                customer.getAddress()
+        );
     }
 
     @Override
     public ItemDTO findItem(String newItemCode) throws SQLException, ClassNotFoundException  {
-        return itemDAO.find(newItemCode);
+        Item item = itemDAO.find(newItemCode);
+        return new ItemDTO(
+                item.getCode(),
+                item.getDescription(),
+                item.getUnitPrice(),
+                item.getQtyOnHand()
+        );
     }
 
     @Override
@@ -62,7 +76,17 @@ public class PlaceOrderBOImpl implements PlaceOrderBO {
 
     @Override
     public ArrayList<ItemDTO> getAllItem() throws SQLException, ClassNotFoundException  {
-        return itemDAO.getAll();
+        ArrayList<Item> entities = itemDAO.getAll();
+        ArrayList<ItemDTO> itemDTOS = new ArrayList<>();
+        for (Item entity : entities) {
+            itemDTOS.add(new ItemDTO(
+                    entity.getCode(),
+                    entity.getDescription(),
+                    entity.getUnitPrice(),
+                    entity.getQtyOnHand()
+            ));
+        }
+        return itemDTOS;
     }
 
     @Override
@@ -83,14 +107,14 @@ public class PlaceOrderBOImpl implements PlaceOrderBO {
 
             if (!isExists) {
                 // set orderDTO
-                OrderDTO orderDTO = new OrderDTO(
+                Order order = new Order(
                         orderId,
                         orderDate,
                         customerId
                 );
 
                 // Order save in DB
-                boolean isOrderSave = orderDAO.save(orderDTO);
+                boolean isOrderSave = orderDAO.save(order);
 
                 // Check save order
                 if (!isOrderSave) {

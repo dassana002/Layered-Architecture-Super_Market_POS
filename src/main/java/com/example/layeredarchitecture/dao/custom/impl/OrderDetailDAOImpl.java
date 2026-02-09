@@ -1,9 +1,13 @@
 package com.example.layeredarchitecture.dao.custom.impl;
 
 import com.example.layeredarchitecture.dao.CrudUtil;
+import com.example.layeredarchitecture.dao.DAOFactory;
 import com.example.layeredarchitecture.dao.custom.OrderDetailDAO;
 import com.example.layeredarchitecture.dto.ItemDTO;
 import com.example.layeredarchitecture.dto.OrderDetailDTO;
+import com.example.layeredarchitecture.entity.Item;
+import com.example.layeredarchitecture.entity.OrderDetail;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +29,13 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
                 return false;
             }
 
-            ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
+            ItemDAOImpl itemDAOImpl = (ItemDAOImpl) DAOFactory.getInstance().getDAO(DAOFactory.DAOType.ITEM);
 
             // Find Item
-            ItemDTO item = itemDAOImpl.find(detail.getItemCode());
-            item.setQtyOnHand(item.getQtyOnHand() - detail.getQty());
+            Item entity = itemDAOImpl.find(detail.getItemCode());
+            entity.setQtyOnHand(entity.getQtyOnHand() - detail.getQty());
 
-            boolean isItemDecrement = itemDAOImpl.update(item);
+            boolean isItemDecrement = itemDAOImpl.update(entity);
             if (!isItemDecrement) {
                 return false;
             }
@@ -40,17 +44,17 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
     }
 
     @Override
-    public ArrayList<OrderDetailDTO> getAll() throws SQLException, ClassNotFoundException {
+    public ArrayList<OrderDetail> getAll() throws SQLException, ClassNotFoundException {
         return null;
     }
 
     @Override
-    public boolean save(OrderDetailDTO object) throws SQLException, ClassNotFoundException {
+    public boolean save(OrderDetail object) throws SQLException, ClassNotFoundException {
         return false;
     }
 
     @Override
-    public boolean update(OrderDetailDTO object) throws SQLException, ClassNotFoundException {
+    public boolean update(OrderDetail object) throws SQLException, ClassNotFoundException {
         return false;
     }
 
@@ -70,7 +74,7 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
     }
 
     @Override
-    public OrderDetailDTO find(String id) throws SQLException, ClassNotFoundException {
+    public OrderDetail find(String id) throws SQLException, ClassNotFoundException {
         return null;
     }
 }
