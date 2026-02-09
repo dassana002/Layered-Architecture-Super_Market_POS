@@ -1,5 +1,5 @@
 package com.example.layeredarchitecture.dao;
 
-public interface QueryDAO {
+public interface QueryDAO extends SuperDAO{
     void getAllOrdersByCustomerName();
 }
