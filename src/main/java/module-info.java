@@ -4,6 +4,7 @@ module com.example.layeredarchitecture {
     requires com.jfoenix;
     requires java.sql;
     requires mysql.connector.j;
+    requires static lombok;
 
     opens com.example.layeredarchitecture to javafx.fxml;
     opens com.example.layeredarchitecture.controller to javafx.fxml;

@@ -1,16 +1,15 @@
-package com.example.layeredarchitecture.dto;
+package com.example.layeredarchitecture.entity;
 
 import lombok.*;
-import java.io.Serializable;
 import java.math.BigDecimal;
 
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Data
 @ToString
-public class OrderDetailDTO implements Serializable {
+public class OrderDetail {
     private String itemCode;
     private int qty;
     private BigDecimal unitPrice;

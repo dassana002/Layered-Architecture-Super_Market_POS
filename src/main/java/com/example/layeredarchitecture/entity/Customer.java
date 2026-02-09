@@ -1,15 +1,14 @@
-package com.example.layeredarchitecture.dto;
+package com.example.layeredarchitecture.entity;
 
 import lombok.*;
-import java.io.Serializable;
 
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Data
 @ToString
-public class CustomerDTO implements Serializable {
+public class Customer {
     private String id;
     private String name;
     private String address;
