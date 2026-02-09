@@ -1,17 +1,9 @@
 package com.example.layeredarchitecture.controller;
 
-import com.example.layeredarchitecture.dao.custom.CustomerDAO;
-import com.example.layeredarchitecture.dao.custom.ItemDAO;
-import com.example.layeredarchitecture.dao.custom.OrderDAO;
-import com.example.layeredarchitecture.dao.custom.OrderDetailDAO;
-import com.example.layeredarchitecture.dao.custom.impl.CustomerDAOImpl;
-import com.example.layeredarchitecture.dao.custom.impl.ItemDAOImpl;
-import com.example.layeredarchitecture.dao.custom.impl.OrderDAOImpl;
-import com.example.layeredarchitecture.dao.custom.impl.OrderDetailDAOImpl;
-import com.example.layeredarchitecture.db.DBConnection;
+import com.example.layeredarchitecture.bo.custom.PlaceOrderBO;
+import com.example.layeredarchitecture.bo.custom.impl.PlaceOrderBOImpl;
 import com.example.layeredarchitecture.model.CustomerDTO;
 import com.example.layeredarchitecture.model.ItemDTO;
-import com.example.layeredarchitecture.model.OrderDTO;
 import com.example.layeredarchitecture.model.OrderDetailDTO;
 import com.example.layeredarchitecture.view.tdm.OrderDetailTM;
 import com.jfoenix.controls.JFXButton;
@@ -60,10 +52,7 @@ public class PlaceOrderFormController {
     private String orderId;
 
     // Property Injection
-    CustomerDAO customerDAO = new CustomerDAOImpl();
-    ItemDAO itemDAO = new ItemDAOImpl();
-    OrderDAO orderDAO = new OrderDAOImpl();
-    OrderDetailDAO orderDetailDAO = new OrderDetailDAOImpl();
+    PlaceOrderBO placeOrderBO = new PlaceOrderBOImpl();
 
     public void initialize() throws SQLException, ClassNotFoundException {
 
@@ -116,7 +105,7 @@ public class PlaceOrderFormController {
                         }
 
                         // Get customer
-                        CustomerDTO customerDTO = customerDAO.find(newValue);
+                        CustomerDTO customerDTO = placeOrderBO.findCustomer(newValue);
 
                         if (customerDTO != null) {
                             txtCustomerName.setText(customerDTO.getName());
@@ -149,7 +138,7 @@ public class PlaceOrderFormController {
                     }
 
                     // Get Item
-                    ItemDTO item = itemDAO.find(newItemCode);
+                    ItemDTO item = placeOrderBO.findItem(newItemCode);
 
                     if (item != null ) {
                         txtDescription.setText(item.getDescription());
@@ -198,16 +187,16 @@ public class PlaceOrderFormController {
     }
 
     private boolean existItem(String code) throws SQLException, ClassNotFoundException {
-        return itemDAO.isExists(code);
+        return placeOrderBO.isExistsItem(code);
     }
 
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
-        return customerDAO.isExists(id);
+        return placeOrderBO.isExistsCustomer(id);
     }
 
     public String generateNewOrderId() {
         try {
-            return orderDAO.getLatestId();
+            return placeOrderBO.getLatestOrderId();
 
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Failed to generate a new order id").show();
@@ -220,7 +209,7 @@ public class PlaceOrderFormController {
 
     private void loadAllCustomerIds() {
         try {
-            ArrayList<String> customerIds = customerDAO.getAllIds();
+            ArrayList<String> customerIds = placeOrderBO.getAllOrderIds();
             for (String customerId : customerIds) {
                 cmbCustomerId.getItems().add(customerId);
             }
@@ -236,7 +225,7 @@ public class PlaceOrderFormController {
     private void loadAllItemCodes() {
         try {
             // Get All Item Codes
-            ArrayList<ItemDTO> itemDTOS= itemDAO.getAll();
+            ArrayList<ItemDTO> itemDTOS= placeOrderBO.getAllItem();
             for (ItemDTO itemDTO : itemDTOS) {
                 cmbItemCode.getItems().add(itemDTO.getCode());
             }
@@ -314,7 +303,7 @@ public class PlaceOrderFormController {
     }
 
     public void btnPlaceOrder_OnAction(ActionEvent actionEvent) throws SQLException, ClassNotFoundException {
-        boolean b = saveOrder(orderId, LocalDate.now(), cmbCustomerId.getValue(), tblOrderDetails.getItems().stream().map(tm -> new OrderDetailDTO(tm.getCode(), tm.getQty(), tm.getUnitPrice())).collect(Collectors.toList()));
+        boolean b = saveNewOrder(orderId, LocalDate.now(), cmbCustomerId.getValue(), tblOrderDetails.getItems().stream().map(tm -> new OrderDetailDTO(tm.getCode(), tm.getQty(), tm.getUnitPrice())).collect(Collectors.toList()));
 
         if (b) {
             new Alert(Alert.AlertType.INFORMATION, "Order has been placed successfully").show();
@@ -331,55 +320,7 @@ public class PlaceOrderFormController {
         calculateTotal();
     }
 
-    public boolean saveOrder(String orderId, LocalDate orderDate, String customerId, List<OrderDetailDTO> orderDetails) throws SQLException, ClassNotFoundException {
-
-        /*Transaction*/
-        Connection connection = DBConnection.getDbConnection().getConnection();
-
-        try {
-            connection.setAutoCommit(false);
-
-            // Check Exist Order
-            boolean isExists = orderDAO.isExists(orderId);
-
-            if (!isExists) {
-                // set orderDTO
-                OrderDTO orderDTO = new OrderDTO(
-                        orderId,
-                        orderDate,
-                        customerId
-                );
-
-                // Order save in DB
-                boolean isOrderSave = orderDAO.save(orderDTO);
-
-                // Check save order
-                if (!isOrderSave) {
-                    connection.rollback();
-                    return false;
-                }
-            }
-
-            // Order Detail save
-            boolean isSaveOrderDetail = orderDetailDAO.saveOrderDetailSave(orderId, orderDetails);
-
-            // check save order Details
-            if (!isSaveOrderDetail) {
-                connection.rollback();
-                return false;
-            }
-
-            connection.commit();
-            return true;
-
-        } catch (Exception e) {
-            connection.rollback();
-            e.printStackTrace();
-
-        } finally {
-            connection.setAutoCommit(true);
-        }
-
-        return false;
+    public boolean saveNewOrder(String orderId, LocalDate orderDate, String customerId, List<OrderDetailDTO> orderDetails) throws SQLException, ClassNotFoundException {
+        return placeOrderBO.saveOrder(orderId, orderDate, customerId, orderDetails);
     }
 }

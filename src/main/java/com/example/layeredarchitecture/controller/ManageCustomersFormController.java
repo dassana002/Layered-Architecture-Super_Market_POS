@@ -1,9 +1,7 @@
 package com.example.layeredarchitecture.controller;
 
-import com.example.layeredarchitecture.bo.CustomerBO;
-import com.example.layeredarchitecture.bo.CustomerBOImpl;
-import com.example.layeredarchitecture.dao.custom.CustomerDAO;
-import com.example.layeredarchitecture.dao.custom.impl.CustomerDAOImpl;
+import com.example.layeredarchitecture.bo.custom.CustomerBO;
+import com.example.layeredarchitecture.bo.custom.impl.CustomerBOImpl;
 import com.example.layeredarchitecture.model.CustomerDTO;
 import com.example.layeredarchitecture.view.tdm.CustomerTM;
 import com.jfoenix.controls.JFXButton;
@@ -75,7 +73,7 @@ public class ManageCustomersFormController {
 
         try {
             // Get all customers
-            ArrayList<CustomerDTO> customers = customerDAO.getAll();
+            ArrayList<CustomerDTO> customers = customerBO.getAllCustomers();
 
             for (CustomerDTO customer : customers) {
                 tblCustomers.getItems().add(new CustomerTM(
@@ -128,7 +126,7 @@ public class ManageCustomersFormController {
                         address);
 
                 // Customer Save
-                boolean isSave = customerDAO.save(customerDTO);
+                boolean isSave = customerBO.saveCustomer(customerDTO);
 
                 if (isSave) {
                     tblCustomers.getItems().add(new CustomerTM(id, name, address));
@@ -155,7 +153,7 @@ public class ManageCustomersFormController {
                         address);
 
                 // Update Customer
-                boolean isUpdate = customerDAO.update(customerDTO);
+                boolean isUpdate = customerBO.updateCustomer(customerDTO);
 
                 if (isUpdate) {
                     // update UI
@@ -178,7 +176,7 @@ public class ManageCustomersFormController {
     }
 
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
-        return customerDAO.isExists(id);
+        return customerBO.isExistsCustomer(id);
     }
 
     public void btnDelete_OnAction(ActionEvent actionEvent) {
@@ -191,7 +189,7 @@ public class ManageCustomersFormController {
             }
 
             // Customer Delete
-            boolean isDelete = customerDAO.delete(id);
+            boolean isDelete = customerBO.deleteCustomer(id);
 
             if (isDelete) {
                 tblCustomers.getItems().remove(tblCustomers.getSelectionModel().getSelectedItem());
@@ -210,7 +208,7 @@ public class ManageCustomersFormController {
 
     private String generateNewId() {
         try {
-            String id = customerDAO.getLatestId();
+            String id = customerBO.getLatestCustomerId();
 
             if (id != null) {
                 int newCustomerId = Integer.parseInt(id.replace("C00-", "")) + 1;
